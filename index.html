@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTB Pro-Training 10'</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --primary: #f39c12;
+      --secondary: #e74c3c;
+      --success: #27ae60;
+      --text: #e0e0e0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 15px;
+    }
+
+    #app-container {
+      max-width: 450px;
+      width: 100%;
+      background: var(--card);
+      padding: 25px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      border: 1px solid #333;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #timer {
+      font-size: 5.5rem;
+      font-weight: 800;
+      line-height: 1;
+      margin: 10px 0;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #exercise-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      height: auto;
+      min-height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 5px;
+      color: var(--primary);
+    }
+
+    #exercise-desc {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 15px;
+      line-height: 1.4;
+      min-height: 3rem;
+    }
+
+    #video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 20px;
+      border: 2px solid #333;
+    }
+
+    #video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      padding: 15px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    #startBtn {
+      background: var(--success);
+      color: white;
+      grid-column: span 2;
+    }
+
+    #pauseBtn {
+      background: #555;
+      color: white;
+      display: none;
+    }
+
+    #resetBtn {
+      background: var(--secondary);
+      color: white;
+      display: none;
+    }
+    
+    #prevBtn, #nextBtn {
+      background: #333;
+      color: var(--text);
+      display: none;
+    }
+
+    .progress-box {
+      width: 100%;
+      height: 6px;
+      background: #333;
+      border-radius: 10px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 1s linear;
+    }
+
+    #exercise-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .indicator {
+      width: 30px;
+      height: 30px;
+      background: #333;
+      color: #888;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid #444;
+    }
+
+    .indicator.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      transform: scale(1.1);
+    }
+
+    .indicator:hover {
+      background: #444;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app-container">
+    <h1>MTB Daily Flow</h1>
+    <div id="exercise-name">Ready for the session?</div>
+    <div id="exercise-desc">Press START to begin your 10-minute routine.</div>
+    <div id="timer">10:00</div>
+
+    <div id="video-container">
+      <div id="placeholder" style="padding-top: 20%; color: #666;">The video will appear here</div>
+    </div>
+
+    <div id="exercise-indicators"></div>
+
+    <div class="progress-box">
+      <div id="progress-bar"></div>
+    </div>
+
+    <div class="controls">
+      <button id="prevBtn" onclick="prevExercise()">&laquo; PREV</button>
+      <button id="nextBtn" onclick="nextExercise()">NEXT &raquo;</button>
+      <button id="startBtn" onclick="toggleStart()">START WORKOUT</button>
+      <button id="pauseBtn" onclick="togglePause()">PAUSE</button>
+      <button id="resetBtn" onclick="resetWorkout()">RESET</button>
+    </div>
+  </div>
+
+  <script>
+    const exercises = [
+      {
+        name: "1. 90/90 Hip Switches", 
+        duration: 60, 
+        vid: "y_6i7nGHAio",
+        desc: "Rotate knees from side to side. Keep torso upright without using hands for support."
+      },
+      {
+        name: "2. World's Greatest Stretch", 
+        duration: 60, 
+        vid: "OCXMbIzYJTQ",
+        desc: "From deep lunge, bring inside elbow to floor, then rotate arm to ceiling. Alternate sides."
+      },
+      {
+        name: "3. Wrist & Shoulder Mobility", 
+        duration: 60, 
+        vid: "9iHko2F81cE",
+        desc: "Perform slow circles with wrists and large rotations with shoulders to lubricate joints."
+      },
+      {
+        name: "4. Single Leg Balance (Clock)", 
+        duration: 90, 
+        vid: "mjzu4CEkTLE",
+        desc: "Stand on one leg, knee slightly bent. Tap 12, 3, 6, 9 with floating foot. Switch at 45s."
+      },
+      {
+        name: "5. Single Leg Deadlift ISO", 
+        duration: 90, 
+        vid: "SI1FEJK8i94",
+        desc: "Hold 'T' position on one leg, hinging at hip with flat back. Keep hips level."
+      },
+      {
+        name: "6. Pogo Hops (Reactivity)", 
+        duration: 90, 
+        vid: "j0nl5dWuqN4",
+        desc: "Bounce on balls of feet using ankles. Minimal ground contact. 20s work / 10s rest x3."
+      },
+      {
+        name: "7. Drop Squats (Attack Position)", 
+        duration: 90, 
+        vid: "Sm1HPlYdAT0", 
+        desc: "From tiptoes, reach up then quickly drop into Attack Position and stick the landing."
+      },
+      {
+        name: "8. Plank Shoulder Taps", 
+        duration: 60, 
+        vid: "8rgurWd-PB8",
+        desc: "High plank position, tap opposite shoulder. Keep hips perfectly still—no rocking."
+      }
+    ];
+
+    let currentIdx = 0;
+    let timeLeft = 0;
+    let totalElapsed = 0;
+    let timerVar = null;
+    let isPaused = false;
+    let isRunning = false;
+
+    // Initialize indicators
+    const indicatorsContainer = document.getElementById('exercise-indicators');
+    exercises.forEach((_, idx) => {
+      const dot = document.createElement('div');
+      dot.className = 'indicator';
+      dot.innerText = idx + 1;
+      dot.onclick = () => jumpToExercise(idx);
+      indicatorsContainer.appendChild(dot);
+    });
+
+    function jumpToExercise(idx) {
+      if (isRunning) {
+        // Calculate elapsed time for previous exercises
+        totalElapsed = 0;
+        for (let i = 0; i < idx; i++) {
+          totalElapsed += exercises[i].duration;
+        }
+        loadExercise(idx);
+        updateUI();
+      } else {
+        // If not running, just start from this exercise
+        toggleStart();
+        // Adjust for the jump
+        totalElapsed = 0;
+        for (let i = 0; i < idx; i++) {
+          totalElapsed += exercises[i].duration;
+        }
+        loadExercise(idx);
+        updateUI();
+      }
+    }
+
+    function updateIndicators(idx) {
+      const dots = document.getElementsByClassName('indicator');
+      for (let i = 0; i < dots.length; i++) {
+        dots[i].classList.remove('active');
+        if (i === idx) dots[i].classList.add('active');
+      }
+    }
+
+    function toggleStart() {
+      if (!isRunning) {
+        isRunning = true;
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('pauseBtn').style.display = 'block';
+        document.getElementById('resetBtn').style.display = 'block';
+        document.getElementById('prevBtn').style.display = 'block';
+        document.getElementById('nextBtn').style.display = 'block';
+        loadExercise(currentIdx); // Load current instead of 0 to allow resuming or jumping before start
+        timerVar = setInterval(tick, 1000);
+      }
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      const btn = document.getElementById('pauseBtn');
+      btn.innerText = isPaused ? "RESUME" : "PAUSE";
+      btn.style.background = isPaused ? "#27ae60" : "#555";
+    }
+
+    function prevExercise() {
+      if (currentIdx > 0) {
+        jumpToExercise(currentIdx - 1);
+      }
+    }
+
+    function nextExercise() {
+      if (currentIdx < exercises.length - 1) {
+        jumpToExercise(currentIdx + 1);
+      } else {
+        complete();
+      }
+    }
+
+    function recalcTotalElapsed() {
+      totalElapsed = 0;
+      for (let i = 0; i < currentIdx; i++) {
+        totalElapsed += exercises[i].duration;
+      }
+    }
+
+    function loadExercise(idx) {
+      if (idx >= exercises.length) {
+        complete();
+        return;
+      }
+      currentIdx = idx;
+      timeLeft = exercises[idx].duration;
+      document.getElementById('exercise-name').innerText = exercises[idx].name;
+      document.getElementById('exercise-desc').innerText = exercises[idx].desc;
+      updateIndicators(idx);
+
+      const vId = exercises[idx].vid;
+      // Added parameters: mute=1 and playsinline=1 to support autoplay on mobile
+      // controls=1 enabled to allow seeking
+      document.getElementById('video-container').innerHTML =
+        `<iframe src="https://www.youtube.com/embed/${vId}?autoplay=1&mute=1&loop=1&playlist=${vId}&rel=0&controls=1&playsinline=1" allow="autoplay; encrypted-media"></iframe>`;
+    }
+
+    function tick() {
+      if (isPaused) return;
+
+      if (timeLeft <= 0) {
+        loadExercise(currentIdx + 1);
+      } else {
+        timeLeft--;
+        totalElapsed++;
+        updateUI();
+      }
+    }
+
+    function updateUI() {
+      const m = Math.floor(timeLeft / 60);
+      const s = timeLeft % 60;
+      document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+
+      const progress = (totalElapsed / 600) * 100;
+      document.getElementById('progress-bar').style.width = progress + "%";
+    }
+
+    function resetWorkout() {
+      clearInterval(timerVar);
+      isRunning = false;
+      isPaused = false;
+      totalElapsed = 0;
+      currentIdx = 0; // Reset index
+      document.getElementById('startBtn').style.display = 'block';
+      document.getElementById('startBtn').innerText = "RESTART";
+      document.getElementById('pauseBtn').style.display = 'none';
+      document.getElementById('resetBtn').style.display = 'none';
+      document.getElementById('prevBtn').style.display = 'none';
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('timer').innerText = "10:00";
+      document.getElementById('exercise-name').innerText = "Session reset";
+      document.getElementById('exercise-desc').innerText = "Press START to begin your 10-minute routine.";
+      document.getElementById('video-container').innerHTML = '<div style="padding-top:20%; color:#666;">Reset completed</div>';
+      document.getElementById('progress-bar').style.width = "0%";
+      updateIndicators(-1); // Clear active indicator
+    }
+
+    function complete() {
+      clearInterval(timerVar);
+      document.getElementById('exercise-name').innerText = "DONE! YOU ARE READY!";
+      document.getElementById('exercise-desc').innerText = "Session completed. Have a great ride!";
+      document.getElementById('timer').innerText = "00:00";
+      document.getElementById('video-container').innerHTML = "<h2 style='color:#f39c12; padding-top:15%;'>GREAT WORK!</h2>";
+    }
+  </script>
+
+</body>
+
+</html>
