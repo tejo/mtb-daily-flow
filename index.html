@@ -4,7 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1e1e1e">
+  <meta name="description" content="10-minute daily MTB mobility and reactivity training routine.">
   <title>MTB Pro-Training 10'</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon-192.svg">
+  <link rel="apple-touch-icon" href="icon-192.svg">
   <style>
     :root {
       --bg: #121212;
@@ -298,14 +303,27 @@
       }, duration);
     }
 
-    // Initialize indicators
+    // Initialize indicators and preload thumbnails
     const indicatorsContainer = document.getElementById('exercise-indicators');
-    exercises.forEach((_, idx) => {
+    exercises.forEach((ex, idx) => {
+      // Create indicator
       const dot = document.createElement('div');
       dot.className = 'indicator';
       dot.innerText = idx + 1;
       dot.onclick = () => jumpToExercise(idx);
       indicatorsContainer.appendChild(dot);
+      
+      // Preload thumbnail to trigger SW caching
+      const img = new Image();
+      img.src = `https://i.ytimg.com/vi/${ex.vid}/hqdefault.jpg`;
+    });
+    
+    // Handle network status changes
+    window.addEventListener('online', () => {
+       if(currentIdx < exercises.length) loadExercise(currentIdx);
+    });
+    window.addEventListener('offline', () => {
+       if(currentIdx < exercises.length) loadExercise(currentIdx);
     });
 
     function jumpToExercise(idx) {
@@ -397,10 +415,23 @@
       updateIndicators(idx);
 
       const vId = exercises[idx].vid;
-      // Added parameters: mute=1 and playsinline=1 to support autoplay on mobile
-      // controls=1 enabled to allow seeking
-      document.getElementById('video-container').innerHTML =
-        `<iframe src="https://www.youtube.com/embed/${vId}?autoplay=1&mute=1&loop=1&playlist=${vId}&rel=0&controls=1&playsinline=1" allow="autoplay; encrypted-media"></iframe>`;
+      const container = document.getElementById('video-container');
+
+      if (navigator.onLine) {
+        // Added parameters: mute=1 and playsinline=1 to support autoplay on mobile
+        // controls=1 enabled to allow seeking
+        container.innerHTML = `<iframe src="https://www.youtube.com/embed/${vId}?autoplay=1&mute=1&loop=1&playlist=${vId}&rel=0&controls=1&playsinline=1" allow="autoplay; encrypted-media"></iframe>`;
+      } else {
+        // Offline mode: Show thumbnail
+        container.innerHTML = `
+          <div style="position: relative; width: 100%; height: 100%; background: #000;">
+            <img src="https://i.ytimg.com/vi/${vId}/hqdefault.jpg" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 8px; font-weight: bold;">
+              OFFLINE MODE
+            </div>
+          </div>
+        `;
+      }
     }
 
     function tick() {
@@ -458,6 +489,15 @@
     }
   </script>
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker registered!', reg))
+          .catch((err) => console.log('Service Worker registration failed', err));
+      });
+    }
+  </script>
 </body>
 
 </html>
