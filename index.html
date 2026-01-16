@@ -311,9 +311,39 @@
     let timerVar = null;
     let isPaused = false;
     let isRunning = false;
+    let wakeLock = null;
     
     // Audio context for beeps
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Wake Lock functions
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake Lock was released');
+          });
+          console.log('Wake Lock is active');
+        } catch (err) {
+          console.error(`${err.name}, ${err.message}`);
+        }
+      }
+    }
+
+    async function releaseWakeLock() {
+      if (wakeLock !== null) {
+        await wakeLock.release();
+        wakeLock = null;
+      }
+    }
+
+    // Re-acquire lock when page becomes visible again
+    document.addEventListener('visibilitychange', async () => {
+      if (wakeLock !== null && document.visibilityState === 'visible') {
+        await requestWakeLock();
+      }
+    });
 
     function playBeep(freq = 880, duration = 200) {
       if (audioCtx.state === 'suspended') {
@@ -391,6 +421,7 @@
     function toggleStart() {
       if (!isRunning) {
         isRunning = true;
+        requestWakeLock();
         
         // Resume audio context on user interaction
         if (audioCtx.state === 'suspended') {
@@ -494,6 +525,7 @@
 
     function resetWorkout() {
       clearInterval(timerVar);
+      releaseWakeLock();
       isRunning = false;
       isPaused = false;
       totalElapsed = 0;
@@ -514,6 +546,7 @@
 
     function complete() {
       clearInterval(timerVar);
+      releaseWakeLock();
       document.getElementById('exercise-name').innerText = "DONE! YOU ARE READY!";
       document.getElementById('exercise-desc').innerText = "Session completed. Have a great ride!";
       document.getElementById('timer').innerText = "00:00";
