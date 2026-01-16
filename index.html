@@ -222,7 +222,7 @@
   </div>
 
   <script>
-    const exercises = [
+    const rawExercises = [
       {
         name: "1. 90/90 Hip Switches", 
         duration: 60, 
@@ -245,13 +245,15 @@
         name: "4. Single Leg Balance (Clock)", 
         duration: 90, 
         vid: "mjzu4CEkTLE",
-        desc: "Stand on one leg, knee slightly bent. Tap 12, 3, 6, 9 with floating foot. Switch at 45s."
+        desc: "Stand on one leg, knee slightly bent. Tap 12, 3, 6, 9 with floating foot.",
+        doubleSide: true
       },
       {
         name: "5. Single Leg Deadlift ISO", 
         duration: 90, 
         vid: "SI1FEJK8i94",
-        desc: "Hold 'T' position on one leg, hinging at hip with flat back. Keep hips level."
+        desc: "Hold 'T' position on one leg, hinging at hip with flat back. Keep hips level.",
+        doubleSide: true
       },
       {
         name: "6. Pogo Hops (Reactivity)", 
@@ -272,6 +274,36 @@
         desc: "High plank position, tap opposite shoulder. Keep hips perfectly still—no rocking."
       }
     ];
+
+    const exercises = [];
+    const setupTime = 5;
+
+    rawExercises.forEach(ex => {
+      // Add Setup phase for every exercise
+      exercises.push({
+        name: "GET READY",
+        duration: setupTime,
+        vid: ex.vid,
+        desc: `Up Next: ${ex.name}`
+      });
+
+      if (ex.doubleSide) {
+        const switchTime = 5;
+        const remainingDuration = ex.duration - setupTime;
+        const workTime = Math.floor((remainingDuration - switchTime) / 2);
+        
+        exercises.push({ ...ex, name: ex.name + " (LEFT)", duration: workTime });
+        exercises.push({ 
+          name: "SWITCH SIDE", 
+          duration: switchTime, 
+          vid: ex.vid, 
+          desc: "Quickly prepare to switch to the other side!" 
+        });
+        exercises.push({ ...ex, name: ex.name + " (RIGHT)", duration: remainingDuration - workTime - switchTime });
+      } else {
+        exercises.push({ ...ex, duration: ex.duration - setupTime });
+      }
+    });
 
     let currentIdx = 0;
     let timeLeft = 0;

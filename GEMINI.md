@@ -11,8 +11,8 @@ This project is a standalone web application designed to guide users through a 1
 ## Key Files
 *   **`index.html`**: The main entry point. Contains:
     *   **UI/Layout:** Responsive card-based design with dark mode aesthetics.
-    *   **Logic:** JavaScript for the workout timer (`tick` function), state management (`currentIdx`, `timeLeft`), and YouTube iframe embedding.
-    *   **Data:** The `exercises` array containing names, durations, and YouTube video IDs.
+    *   **Logic:** JavaScript for the workout timer (`tick` function), state management, and dynamic exercise list generation (handling setup times and side splitting).
+    *   **Data:** The `rawExercises` array serves as the source of truth, supporting configuration like `doubleSide` for automatic variant splitting.
 *   **`mtb_exercise.md`**: Documentation outlining the "MTB Flow & Reactivity" training plan, including core principles and detailed descriptions of each movement.
 
 ## Building and Running
