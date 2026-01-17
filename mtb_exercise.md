@@ -17,7 +17,7 @@ Goal: Unlock the joints that control the bike's movement.
 
 World’s Greatest Stretch (1 min): From a deep lunge position, bring your inside elbow toward the floor, then rotate that same arm toward the ceiling. Alternate sides.
 
-Wrist & Shoulder Rotations (1 min): Perform slow, controlled circles with your wrists and large rotations with your shoulders to lubricate the joints that absorb trail chatter.
+Deep Squat with Reach (1 min): Sink into a deep squat while keeping your heels flat on the floor. Place one hand on the floor and reach the other toward the ceiling, following it with your eyes. Alternate sides to open your hips and thoracic spine.
 
 2. Proprioception & Balance (3:00 – 6:00)
 Goal: Train the nervous system to stabilize the body on a shifting platform.

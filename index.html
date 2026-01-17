@@ -135,7 +135,7 @@
       color: white;
       display: none;
     }
-    
+
     #prevBtn, #nextBtn {
       background: #333;
       color: var(--text);
@@ -224,52 +224,53 @@
   <script>
     const rawExercises = [
       {
-        name: "1. 90/90 Hip Switches", 
-        duration: 60, 
+        name: "1. 90/90 Hip Switches",
+        duration: 60,
         vid: "y_6i7nGHAio",
         desc: "Rotate knees from side to side. Keep torso upright without using hands for support."
       },
       {
-        name: "2. World's Greatest Stretch", 
-        duration: 60, 
+        name: "2. World's Greatest Stretch",
+        duration: 60,
         vid: "OCXMbIzYJTQ",
-        desc: "From deep lunge, bring inside elbow to floor, then rotate arm to ceiling. Alternate sides."
+        desc: "From deep lunge, bring inside elbow to floor, then rotate arm to ceiling. Alternate sides.",
+        doubleSide: true
       },
       {
-        name: "3. Wrist & Shoulder Mobility", 
-        duration: 60, 
-        vid: "9iHko2F81cE",
-        desc: "Perform slow circles with wrists and large rotations with shoulders to lubricate joints."
+        name: "3. Deep Squat with Reach",
+        duration: 60,
+        vid: "lQtui4VLBVA",
+        desc: "Sink into a deep squat, heels down. Reach one arm to the sky while the other stays on the floor. Alternate sides."
       },
       {
-        name: "4. Single Leg Balance (Clock)", 
-        duration: 90, 
+        name: "4. Single Leg Balance (Clock)",
+        duration: 90,
         vid: "mjzu4CEkTLE",
         desc: "Stand on one leg, knee slightly bent. Tap 12, 3, 6, 9 with floating foot.",
         doubleSide: true
       },
       {
-        name: "5. Single Leg Deadlift ISO", 
-        duration: 90, 
+        name: "5. Single Leg Deadlift ISO",
+        duration: 90,
         vid: "SI1FEJK8i94",
         desc: "Hold 'T' position on one leg, hinging at hip with flat back. Keep hips level.",
         doubleSide: true
       },
       {
-        name: "6. Pogo Hops (Reactivity)", 
-        duration: 90, 
+        name: "6. Pogo Hops (Reactivity)",
+        duration: 60,
         vid: "j0nl5dWuqN4",
         desc: "Bounce on balls of feet using ankles. Minimal ground contact. 20s work / 10s rest x3."
       },
       {
-        name: "7. Drop Squats (Attack Position)", 
-        duration: 90, 
-        vid: "Sm1HPlYdAT0", 
+        name: "7. Drop Squats (Attack Position)",
+        duration: 60,
+        vid: "Sm1HPlYdAT0",
         desc: "From tiptoes, reach up then quickly drop into Attack Position and stick the landing."
       },
       {
-        name: "8. Plank Shoulder Taps", 
-        duration: 60, 
+        name: "8. Plank Shoulder Taps",
+        duration: 60,
         vid: "8rgurWd-PB8",
         desc: "High plank position, tap opposite shoulder. Keep hips perfectly still—no rocking."
       }
@@ -287,7 +288,7 @@
     let isPaused = false;
     let isRunning = false;
     let wakeLock = null;
-    
+
     // Audio context for beeps
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -326,14 +327,14 @@
       }
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
-      
+
       oscillator.type = 'sine';
       oscillator.frequency.value = freq;
       gainNode.gain.value = 0.1;
-      
+
       oscillator.start();
       setTimeout(() => {
         oscillator.stop();
@@ -349,12 +350,12 @@
       dot.innerText = idx + 1;
       dot.onclick = () => jumpToExercise(idx);
       indicatorsContainer.appendChild(dot);
-      
+
       // Preload thumbnail to trigger SW caching
       const img = new Image();
       img.src = `https://i.ytimg.com/vi/${ex.vid}/hqdefault.jpg`;
     });
-    
+
     // Handle network status changes
     window.addEventListener('online', () => {
        if(currentIdx < exercises.length) loadExercise(currentIdx);
@@ -394,7 +395,7 @@
       if (!isRunning) {
         isRunning = true;
         requestWakeLock();
-        
+
         // Resume audio context on user interaction
         if (audioCtx.state === 'suspended') {
           audioCtx.resume();
@@ -439,9 +440,9 @@
       currentIdx = idx;
       currentStep = 0; // Always start with SETUP
       updateIndicators(idx);
-      
+
       const ex = exercises[idx];
-      
+
       // Load video only once per exercise change
       const vId = ex.vid;
       const container = document.getElementById('video-container');
@@ -464,7 +465,7 @@
 
     function loadStep() {
       const ex = exercises[currentIdx];
-      
+
       // Step 0: SETUP
       if (currentStep === 0) {
         timeLeft = SETUP_TIME;
@@ -503,7 +504,7 @@
 
     function tick() {
       if (isPaused) return;
-      
+
       // Beep logic for last 5 seconds of any phase
       if (timeLeft <= 5 && timeLeft > 0) {
         playBeep(timeLeft === 1 ? 1200 : 880);
@@ -512,7 +513,7 @@
       if (timeLeft <= 0) {
         // Transition Logic
         const ex = exercises[currentIdx];
-        
+
         if (ex.doubleSide) {
            // Flow: 0(Setup) -> 1(Left) -> 2(Switch) -> 3(Right) -> Next Exercise
            if (currentStep < 3) {
@@ -584,7 +585,7 @@
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => console.log('Service Worker registered!', reg))
           .catch((err) => console.log('Service Worker registration failed', err));
-          
+
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           // Reload page when new SW takes control to show latest version
           window.location.reload();

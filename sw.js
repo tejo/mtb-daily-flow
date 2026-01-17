@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mtb-flow-5';
+const CACHE_NAME = 'mtb-flow-6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
