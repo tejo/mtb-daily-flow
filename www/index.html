@@ -220,18 +220,33 @@
       <button id="resetBtn" onclick="resetWorkout()">RESET</button>
     </div>
 
-    <div id="footer" style="margin-top: 30px; font-size: 0.8rem; color: #666;">
-      <a href="apk/mtb-daily-flow.apk" id="download-apk" style="color: #666; text-decoration: none; border: 1px solid #333; padding: 5px 10px; border-radius: 5px; display: inline-block;">
+    <div id="footer" style="margin-top: 40px; text-align: center;">
+      <a href="apk/mtb-daily-flow.apk" id="download-apk" style="
+        background-color: #333; 
+        color: var(--primary); 
+        text-decoration: none; 
+        padding: 12px 24px; 
+        border-radius: 50px; 
+        font-weight: bold; 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        transition: transform 0.2s;
+        border: 1px solid var(--primary);
+      ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/></svg>
         Download Android App
       </a>
+      <p style="margin-top: 10px; font-size: 0.8rem; color: #666;">v1.0.0 &bull; Offline Capable</p>
     </div>
   </div>
 
   <script>
     // Hide download link if running natively
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-       const dlBtn = document.getElementById('download-apk');
-       if(dlBtn) dlBtn.style.display = 'none';
+       const footer = document.getElementById('footer');
+       if(footer) footer.style.display = 'none';
     }
 
     const rawExercises = [

@@ -5,6 +5,22 @@
 ANDROID_HOME ?= $(PWD)/android-sdk
 export ANDROID_HOME
 
+# If local JDK exists, use it
+ifneq ($(wildcard $(PWD)/android-sdk/jdk),)
+    JAVA_HOME := $(PWD)/android-sdk/jdk
+    export JAVA_HOME
+    PATH := $(JAVA_HOME)/bin:$(PATH)
+    export PATH
+else
+    # Arch Linux: Gradle requires < Java 25. Prefer Java 21 if available.
+    ifneq ($(wildcard /usr/lib/jvm/java-21-openjdk),)
+        JAVA_HOME := /usr/lib/jvm/java-21-openjdk
+        export JAVA_HOME
+        PATH := $(JAVA_HOME)/bin:$(PATH)
+        export PATH
+    endif
+endif
+
 help:
 	@echo "Available commands:"
 	@echo "  make serve         - Start a local development server"
