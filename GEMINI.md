@@ -4,21 +4,21 @@
 This project is a standalone web application designed to guide users through a 10-minute daily Mountain Bike (MTB) training routine. The application provides a timer, exercise instructions, and embedded video demonstrations for a series of mobility, balance, and reactivity exercises.
 
 ## Architecture & Technologies
-*   **Type:** Single-Page Application (SPA) / Static Site.
-*   **Technologies:** HTML5, CSS3, Vanilla JavaScript.
-*   **Structure:** Monolithic - all styles, markup, and logic are contained within a single `index.html` file for portability and simplicity.
+*   **Type:** Hybrid Mobile App (Capacitor) / Single-Page Application (SPA).
+*   **Technologies:** HTML5, CSS3, Vanilla JavaScript, Capacitor (Android).
+*   **Structure:**
+    *   `www/`: Contains the web application (HTML, CSS, JS).
+    *   `android/`: Contains the native Android project.
+    *   Root: Build configuration and scripts.
 
 ## Key Files
-*   **`index.html`**: The main entry point. Contains:
-    *   **UI/Layout:** Responsive card-based design with dark mode aesthetics.
-    *   **Logic:** JavaScript for the workout timer (`tick` function), state management, and dynamic exercise list generation (handling setup times and side splitting).
-    *   **Data:** The `rawExercises` array serves as the source of truth, supporting configuration like `doubleSide` for automatic variant splitting.
-*   **`mtb_exercise.md`**: Documentation outlining the "MTB Flow & Reactivity" training plan, including core principles and detailed descriptions of each movement.
+*   **`www/index.html`**: The main entry point. Contains UI, logic, and data.
+*   **`mtb_exercise.md`**: Documentation outlining the "MTB Flow & Reactivity" training plan.
+*   **`plan.md`**: Current migration plan for Capacitor and Android CLI build.
 
 ## Building and Running
-No build process is required.
-*   **Run:** simply open `index.html` in any modern web browser.
-*   **Development:** Edit `index.html` directly.
+*   **Web:** Open `www/index.html` locally or serve via `make serve`.
+*   **Android:** Use `make build-android` (requires Android SDK setup).
 
 ## Development Conventions
 *   **Code Style:** Keep CSS and JS embedded within `index.html` unless the project grows significantly.
