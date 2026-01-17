@@ -279,6 +279,9 @@
     const exercises = rawExercises;
     const SETUP_TIME = 5;
     const SWITCH_TIME = 5;
+    
+    // Calculate total duration dynamically
+    const TOTAL_DURATION = exercises.reduce((acc, ex) => acc + ex.duration, 0);
 
     let currentIdx = 0;
     let currentStep = 0; // 0: SETUP, 1: WORK/LEFT, 2: SWITCH, 3: RIGHT
@@ -288,6 +291,16 @@
     let isPaused = false;
     let isRunning = false;
     let wakeLock = null;
+
+    // Helper to format time (MM:SS)
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Initialize timer display
+    document.getElementById('timer').innerText = formatTime(TOTAL_DURATION);
 
     // Audio context for beeps
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -539,11 +552,9 @@
     }
 
     function updateUI() {
-      const m = Math.floor(timeLeft / 60);
-      const s = timeLeft % 60;
-      document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+      document.getElementById('timer').innerText = formatTime(timeLeft);
 
-      const progress = (totalElapsed / 600) * 100;
+      const progress = (totalElapsed / TOTAL_DURATION) * 100;
       document.getElementById('progress-bar').style.width = progress + "%";
     }
 
@@ -561,7 +572,7 @@
       document.getElementById('resetBtn').style.display = 'none';
       document.getElementById('prevBtn').style.display = 'none';
       document.getElementById('nextBtn').style.display = 'none';
-      document.getElementById('timer').innerText = "10:00";
+      document.getElementById('timer').innerText = formatTime(TOTAL_DURATION);
       document.getElementById('exercise-name').innerText = "Session reset";
       document.getElementById('exercise-desc').innerText = "Press START to begin your 10-minute routine.";
       document.getElementById('video-container').innerHTML = '<div style="padding-top:20%; color:#666;">Reset completed</div>';
