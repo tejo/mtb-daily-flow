@@ -275,37 +275,12 @@
       }
     ];
 
-    const exercises = [];
-    const setupTime = 5;
-
-    rawExercises.forEach(ex => {
-      // Add Setup phase for every exercise
-      exercises.push({
-        name: "GET READY",
-        duration: setupTime,
-        vid: ex.vid,
-        desc: `Up Next: ${ex.name}`
-      });
-
-      if (ex.doubleSide) {
-        const switchTime = 5;
-        const remainingDuration = ex.duration - setupTime;
-        const workTime = Math.floor((remainingDuration - switchTime) / 2);
-        
-        exercises.push({ ...ex, name: ex.name + " (LEFT)", duration: workTime });
-        exercises.push({ 
-          name: "SWITCH SIDE", 
-          duration: switchTime, 
-          vid: ex.vid, 
-          desc: "Quickly prepare to switch to the other side!" 
-        });
-        exercises.push({ ...ex, name: ex.name + " (RIGHT)", duration: remainingDuration - workTime - switchTime });
-      } else {
-        exercises.push({ ...ex, duration: ex.duration - setupTime });
-      }
-    });
+    const exercises = rawExercises;
+    const SETUP_TIME = 5;
+    const SWITCH_TIME = 5;
 
     let currentIdx = 0;
+    let currentStep = 0; // 0: SETUP, 1: WORK/LEFT, 2: SWITCH, 3: RIGHT
     let timeLeft = 0;
     let totalElapsed = 0;
     let timerVar = null;
@@ -389,22 +364,19 @@
     });
 
     function jumpToExercise(idx) {
+      // Calculate elapsed time for previous exercises
+      let newTotalElapsed = 0;
+      for (let i = 0; i < idx; i++) {
+        newTotalElapsed += exercises[i].duration;
+      }
+      totalElapsed = newTotalElapsed;
+
       if (isRunning) {
-        // Calculate elapsed time for previous exercises
-        totalElapsed = 0;
-        for (let i = 0; i < idx; i++) {
-          totalElapsed += exercises[i].duration;
-        }
         loadExercise(idx);
         updateUI();
       } else {
         // If not running, just start from this exercise
         toggleStart();
-        // Adjust for the jump
-        totalElapsed = 0;
-        for (let i = 0; i < idx; i++) {
-          totalElapsed += exercises[i].duration;
-        }
         loadExercise(idx);
         updateUI();
       }
@@ -459,33 +431,24 @@
       }
     }
 
-    function recalcTotalElapsed() {
-      totalElapsed = 0;
-      for (let i = 0; i < currentIdx; i++) {
-        totalElapsed += exercises[i].duration;
-      }
-    }
-
     function loadExercise(idx) {
       if (idx >= exercises.length) {
         complete();
         return;
       }
       currentIdx = idx;
-      timeLeft = exercises[idx].duration;
-      document.getElementById('exercise-name').innerText = exercises[idx].name;
-      document.getElementById('exercise-desc').innerText = exercises[idx].desc;
+      currentStep = 0; // Always start with SETUP
       updateIndicators(idx);
-
-      const vId = exercises[idx].vid;
+      
+      const ex = exercises[idx];
+      
+      // Load video only once per exercise change
+      const vId = ex.vid;
       const container = document.getElementById('video-container');
 
       if (navigator.onLine) {
-        // Added parameters: mute=1 and playsinline=1 to support autoplay on mobile
-        // controls=1 enabled to allow seeking
         container.innerHTML = `<iframe src="https://www.youtube.com/embed/${vId}?autoplay=1&mute=1&loop=1&playlist=${vId}&rel=0&controls=1&playsinline=1" allow="autoplay; encrypted-media"></iframe>`;
       } else {
-        // Offline mode: Show thumbnail
         container.innerHTML = `
           <div style="position: relative; width: 100%; height: 100%; background: #000;">
             <img src="https://i.ytimg.com/vi/${vId}/hqdefault.jpg" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
@@ -495,18 +458,78 @@
           </div>
         `;
       }
+
+      loadStep();
+    }
+
+    function loadStep() {
+      const ex = exercises[currentIdx];
+      
+      // Step 0: SETUP
+      if (currentStep === 0) {
+        timeLeft = SETUP_TIME;
+        document.getElementById('exercise-name').innerText = "GET READY";
+        document.getElementById('exercise-desc').innerText = `Up Next: ${ex.name}`;
+        return;
+      }
+
+      // Logic for Double Sided
+      if (ex.doubleSide) {
+        const totalWorkTime = ex.duration - SETUP_TIME - SWITCH_TIME;
+        const halfTime = Math.floor(totalWorkTime / 2);
+
+        if (currentStep === 1) { // LEFT
+          timeLeft = halfTime;
+          document.getElementById('exercise-name').innerText = `${ex.name} (LEFT)`;
+          document.getElementById('exercise-desc').innerText = `${ex.desc} (Left Side)`;
+        } else if (currentStep === 2) { // SWITCH
+          timeLeft = SWITCH_TIME;
+          document.getElementById('exercise-name').innerText = "SWITCH SIDE";
+          document.getElementById('exercise-desc').innerText = "Quickly prepare to switch sides!";
+        } else if (currentStep === 3) { // RIGHT
+          timeLeft = totalWorkTime - halfTime; // Remainder
+          document.getElementById('exercise-name').innerText = `${ex.name} (RIGHT)`;
+          document.getElementById('exercise-desc').innerText = `${ex.desc} (Right Side)`;
+        }
+      } else {
+        // Standard Exercise
+        if (currentStep === 1) {
+          timeLeft = ex.duration - SETUP_TIME;
+          document.getElementById('exercise-name').innerText = ex.name;
+          document.getElementById('exercise-desc').innerText = ex.desc;
+        }
+      }
     }
 
     function tick() {
       if (isPaused) return;
       
-      // Beep logic for last 5 seconds
+      // Beep logic for last 5 seconds of any phase
       if (timeLeft <= 5 && timeLeft > 0) {
-        playBeep(timeLeft === 1 ? 1200 : 880); // Higher pitch for last second
+        playBeep(timeLeft === 1 ? 1200 : 880);
       }
 
       if (timeLeft <= 0) {
-        loadExercise(currentIdx + 1);
+        // Transition Logic
+        const ex = exercises[currentIdx];
+        
+        if (ex.doubleSide) {
+           // Flow: 0(Setup) -> 1(Left) -> 2(Switch) -> 3(Right) -> Next Exercise
+           if (currentStep < 3) {
+             currentStep++;
+             loadStep();
+           } else {
+             loadExercise(currentIdx + 1);
+           }
+        } else {
+           // Flow: 0(Setup) -> 1(Work) -> Next Exercise
+           if (currentStep < 1) {
+             currentStep++;
+             loadStep();
+           } else {
+             loadExercise(currentIdx + 1);
+           }
+        }
       } else {
         timeLeft--;
         totalElapsed++;
@@ -530,6 +553,7 @@
       isPaused = false;
       totalElapsed = 0;
       currentIdx = 0; // Reset index
+      currentStep = 0;
       document.getElementById('startBtn').style.display = 'block';
       document.getElementById('startBtn').innerText = "RESTART";
       document.getElementById('pauseBtn').style.display = 'none';
