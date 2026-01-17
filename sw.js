@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mtb-flow-3';
+const CACHE_NAME = 'mtb-flow-4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const ASSETS_TO_CACHE = [
 
 // Install event: Cache assets
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force waiting service worker to become active
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -26,7 +27,7 @@ self.addEventListener('activate', (event) => {
           return caches.delete(key);
         }
       }));
-    })
+    }).then(() => self.clients.claim()) // Claim clients immediately
   );
 });
 
